@@ -10,19 +10,26 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 
+# FastAPI instance
 app = FastAPI()
+
+# Enable asyncio patching for Pyrogram
 nest_asyncio.apply()
 
+# Bot credentials
 API_ID = 28590286
 API_HASH = "6a68cc6b41219dc57b7a52914032f92f"
 BOT_TOKEN = "7412939071:AAFgfHJGhMXw9AuGAAnPuGk_LbAlB5kX2KY"
 DOWNLOAD_DIR = "./downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
+# Chrome driver global instance
 driver = None
 
+# Pyrogram Client
 bot = Client("jnvu_result_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
+# /start command handler
 @bot.on_message(filters.command("start"))
 async def start_handler(client: Client, message: Message):
     global driver
@@ -39,10 +46,14 @@ async def start_handler(client: Client, message: Message):
             "download.directory_upgrade": True,
             "plugins.always_open_pdf_externally": True
         })
+
+        # Use environment variable for chromedriver path (Docker compatible)
         driver = webdriver.Chrome(
-    service=Service(os.getenv("CHROMEDRIVER_PATH", "/usr/bin/chromedriver")),
-    options=chrome_options
+            service=Service(os.getenv("CHROMEDRIVER_PATH", "/usr/bin/chromedriver")),
+            options=chrome_options
         )
+
+        # Navigate to JNVU result page
         driver.get("https://share.google/RiGoUdAWQEkczypqg")
         time.sleep(2)
         driver.find_element(By.XPATH, "/html/body/form/div[3]/div/div[1]/fieldset/div/div[1]/div/div[1]/table/tbody/tr[2]/td/div/div/ul/li[1]/span[3]/a").click()
@@ -52,6 +63,7 @@ async def start_handler(client: Client, message: Message):
 
         await message.reply("✅ Bot is ready! Now send your roll number like `25rba00299`.")
 
+# Handle roll number input
 @bot.on_message(filters.text & filters.private & ~filters.command(["start"]))
 async def handle_roll_number(client: Client, message: Message):
     global driver
@@ -66,17 +78,22 @@ async def handle_roll_number(client: Client, message: Message):
         return
 
     try:
+        # Delete old PDFs
         for f in os.listdir(DOWNLOAD_DIR):
             if f.endswith(".pdf"):
                 os.remove(os.path.join(DOWNLOAD_DIR, f))
 
+        # Input roll number
         input_field = driver.find_element(By.XPATH, "/html/body/form/div[4]/div/div[2]/table/tbody/tr/td[2]/span/input")
         input_field.clear()
         input_field.send_keys(roll_number)
         time.sleep(1)
+
+        # Submit form
         driver.find_element(By.XPATH, "/html/body/form/div[4]/div/div[3]/span[1]/input").click()
         time.sleep(3)
 
+        # Wait for download
         pdf_path = None
         for _ in range(5):
             pdf_files = [f for f in os.listdir(DOWNLOAD_DIR) if f.endswith(".pdf")]
@@ -95,10 +112,12 @@ async def handle_roll_number(client: Client, message: Message):
     except Exception as e:
         await message.reply(f"⚠️ Error: `{str(e)}`")
 
+# Start bot on FastAPI startup
 @app.on_event("startup")
 async def startup_event():
     asyncio.create_task(bot.start())
 
+# Health check route for Render
 @app.get("/")
 def read_root():
     return {"status": "JNVDU Bot Running"}
