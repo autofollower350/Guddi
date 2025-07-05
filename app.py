@@ -39,8 +39,10 @@ async def start_handler(client: Client, message: Message):
             "download.directory_upgrade": True,
             "plugins.always_open_pdf_externally": True
         })
-        driver = webdriver.Chrome(service=Service("/usr/local/bin/chromedriver"), options=chrome_options)
-
+        driver = webdriver.Chrome(
+    service=Service(os.getenv("CHROMEDRIVER_PATH", "/usr/bin/chromedriver")),
+    options=chrome_options
+        )
         driver.get("https://share.google/RiGoUdAWQEkczypqg")
         time.sleep(2)
         driver.find_element(By.XPATH, "/html/body/form/div[3]/div/div[1]/fieldset/div/div[1]/div/div[1]/table/tbody/tr[2]/td/div/div/ul/li[1]/span[3]/a").click()
