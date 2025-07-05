@@ -1,17 +1,20 @@
 #!/bin/bash
 
-# Install Chrome
+# Create local bin path
+mkdir -p /tmp/chrome
+mkdir -p /tmp/chromedriver
+
+# Install Chrome to /tmp/chrome
 wget -q https://storage.googleapis.com/chrome-for-testing-public/136.0.7103.113/linux64/chrome-linux64.zip
-unzip -q chrome-linux64.zip
-mv chrome-linux64 /opt/chrome
-ln -sf /opt/chrome/chrome /usr/bin/google-chrome
+unzip -q chrome-linux64.zip -d /tmp/chrome
 
-# Install ChromeDriver
-rm -f /usr/local/bin/chromedriver
+# Install Chromedriver to /tmp/chromedriver
 wget -q -O chromedriver.zip https://storage.googleapis.com/chrome-for-testing-public/136.0.7103.113/linux64/chromedriver-linux64.zip
-unzip -o chromedriver.zip
-mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
-chmod +x /usr/local/bin/chromedriver
+unzip -q chromedriver.zip -d /tmp/chromedriver
 
-# Start the Python bot
+# Export correct paths
+export PATH="/tmp/chromedriver/chromedriver-linux64:$PATH"
+export GOOGLE_CHROME_BIN="/tmp/chrome/chrome-linux64/chrome"
+
+# Run Python bot
 python3 bot.py
