@@ -45,15 +45,15 @@ async def start_handler(client: Client, message: Message):
 
     if driver is None:
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_experimental_option("prefs", {
-            "download.default_directory": DOWNLOAD_DIR,
-            "download.prompt_for_download": False,
-            "download.directory_upgrade": True,
-            "plugins.always_open_pdf_externally": True
-        })
+chrome_options.binary_location = os.getenv("GOOGLE_CHROME_BIN", "/tmp/chrome/chrome-linux64/chrome")
+chrome_options.add_argument("--headless")
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
+
+driver = webdriver.Chrome(
+    service=Service("/tmp/chromedriver/chromedriver-linux64/chromedriver"),
+    options=chrome_options
+)
 
         # Use environment variable for chromedriver path (Docker compatible)
         driver = webdriver.Chrome(
