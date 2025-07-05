@@ -16,5 +16,5 @@ unzip -q chromedriver.zip -d /tmp/chromedriver
 export PATH="/tmp/chromedriver/chromedriver-linux64:$PATH"
 export GOOGLE_CHROME_BIN="/tmp/chrome/chrome-linux64/chrome"
 
-# Run Python bot
-python3 bot.py
+# ✅ Start FastAPI bot via Uvicorn
+uvicorn render_fastapi_bot:app --host 0.0.0.0 --port $PORT
